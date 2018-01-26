@@ -1,0 +1,21 @@
+{
+  "name": "hack36-server",
+  "version": "1.0.0",
+  "description": "server side repo for hack36",
+  "main": "server.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/srksumanth/hack36-server.git"
+  },
+  "author": "sumanth,chandu",
+  "homepage": "https://github.com/srksumanth/hack36-server#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "mongoose": "^5.0.1",
+    "socket.io": "^2.0.4"
+  }
+}
