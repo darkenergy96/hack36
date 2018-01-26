@@ -6,11 +6,15 @@ const io = require("socket.io")(http);
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const path = require("path");
+const socketData = require("./routes/socket.js");
+const Routes = require("./routes/routes.js");
 mongoose.Promise = global.Promise;
 const mongoURL = "mongodb://localhost:27017/socio";
 mongoose.connect(mongoURL);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(Routes);
+app.use(socketData);
 app.use(express.static(path.join(__dirname, "public")));
 app.get("/", function(req, res) {
   res.send("Hack36 Home page");
