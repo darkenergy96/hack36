@@ -1,2 +1,2 @@
-# hack36-server
-Hack36 repo for server side code
+# Hack36 repo
+#### Hack36 Android repo url https://github.com/PraneethYerra/hack36-client
