@@ -66,6 +66,14 @@ let socketHandler = function(socket) {
         socket.to(data.from).emit("private", data);
       });
     });
+    //request prank
+    socket.on("request-prank", data => {
+      const { from, to } = data;
+      rclient.get(data.to, (err, socketId) => {
+        if (err) console.log(err);
+        socket.to(socketId).emit("request-prank", from);
+      });
+    });
   });
 };
 io.on("connection", socketHandler);

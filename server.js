@@ -9,6 +9,7 @@ const path = require("path");
 const socketData = require("./routes/socket.js");
 const Routes = require("./routes/routes.js");
 const fetchRoutes = require("./routes/fetch");
+const prankRoutes = require("./routes/prank");
 const errorHandler = require("./error-handler");
 mongoose.Promise = global.Promise;
 const mongoURL = "mongodb://localhost:27017/socio";
@@ -18,6 +19,7 @@ app.use(bodyParser.json());
 app.use(Routes);
 app.use(socketData);
 app.use(fetchRoutes);
+app.use(prankRoutes);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(errorHandler);
 app.get("/", function(req, res) {

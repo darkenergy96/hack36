@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user.js");
 const Message = require("../models/message.js");
 const rclient = require("./socket.js");
-router.post("/user-details", (req, res) => {
+router.post("/user-details", (req, res, next) => {
   console.log("test", req.body.deviceToken);
   User.findOne({ id: req.body.id }, (err, user) => {
     let { body } = req;
@@ -23,7 +23,9 @@ router.post("/user-details", (req, res) => {
         deviceToken: body.deviceToken
       });
       user.save((err, user) => {
-        if (err) return res.send(500, { error: err });
+        if (err) {
+          next(err);
+        }
         console.log("user saved " + user.name + user.deviceToken);
         return res.sendStatus(200);
       });
@@ -89,7 +91,7 @@ router.get("/:userId/friends", (req, res) => {
   let id = req.params.userId;
   //   console.log("requested for friends");
   User.findOne({ id: id })
-    .select("friends -_id")
+    .select("friends prankDetails -_id")
     .exec((err, friends) => {
       if (err) res.status(500).send(err);
       else res.status(200).send(friends);
