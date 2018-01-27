@@ -28,8 +28,20 @@ let socketHandler = function(socket) {
   socket.on("disconnect", function() {
     userCount--;
     rclient.get(socket.id, (err, userId) => {
-      rclient.del(userId);
-      rclient.del(socket.id);
+      rclient.del(userId, (err, res) => {
+        if (err) console.log(`redis delete error: ${err}`);
+        else {
+          if (res == 1) console.log("userId deleted from redis");
+          else console.log("cannot delete userId from redis");
+        }
+      });
+      rclient.del(socket.id, (err, res) => {
+        if (err) console.log(`redis delete error: ${err}`);
+        else {
+          if (res == 1) console.log("socketId deleted from redis");
+          else console.log("cannot delete socketId from redis");
+        }
+      });
     });
     console.log("user disconnected: ", userCount);
   });
