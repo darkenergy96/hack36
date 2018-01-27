@@ -47,82 +47,73 @@ router.post("/user-details", (req, res, next) => {
   });
   // console.log(util.inspect(req.body, { showHidden: false, depth: null }));
 });
-// // random chat
-// router.post("/:userId/random-chat", (req, res) => {
-//   let id = req.params.userId;
-//   User.findOne({ id: id }, (err, user) => {
-//     if (err) console.log("User find error", err);
-//     else {
-//       let friends = user.friends;
-//       let onlineFriends = [];
-//       //   let promiseArray = [];
-//       let rclientPromise = util.promisify(rclient.get);
-//       // friends.forEach(friend => {
-//       //   promiseArray.push(rclientPromise(friend.id));
-//       // });
-//       // (async () => {
-//       //   for await (const reply of promiseArray) {
-//       //     console.log(reply);
-//       //     onlineFriends.push(friends[index]);
-//       //     index++;
-//       //   }
-//       // })().catch(err => {
-//       //   console.log(err);
-//       // });
-//       (async () => {
-//         for (const friend of friends) {
-//           const id = await rclientPromise(friend.id);
-//           console.log(id);
-//           onlineFriends.push(id);
-//         }
-//       })()
-//         .catch(err => {
-//           console.log(err);
-//         })
-//         .then(() => {
-//           if (onlineFriends.length > 0) {
-//             let random_friend =
-//               onlineFriends[Math.floor(Math.random() * onlineFriends.length)];
-//             if (random_friend) {
-//               (async () => {
-//                 let random_friend_socketId = await rclientPromise(
-//                   random_friend.id
-//                 );
-//                 return random_friend_socketId;
-//               })()
-//                 .catch(err => {
-//                   console.log(`rondom friend socketId fetch error: ${err}`);
-//                 })
-//                 .then(socketId => {});
-//             }
-//           }
-//         });
+// random chat will be edited by SUMANTH
+router.get("/:userId/random-chat", (req, res) => {
+  let id = req.params.userId;
+  User.findOne({ id: id }, (err, user) => {
+    if (err) console.log("User find error", err);
+    else {
+      let friends = user.friends;
+      let onlineFriends = []; //socket ids
+      let promiseArray = [];
+      let rclientPromise = util.promisify(rclient.get);
+      // friends.forEach(friend => {
+      //   promiseArray.push(rclientPromise(friend.id));
+      // });
+      // (async () => {
+      //   for await (const reply of promiseArray) {
+      //     console.log(reply);
+      //     onlineFriends.push(friends[index]);
+      //     index++;
+      //   }
+      // })().catch(err => {
+      //   console.log(err);
+      // });
+      (async () => {
+        for (const friend of friends) {
+          const id = await rclientPromise(friend.id);
+          console.log(id);
+          onlineFriends.push(id);
+        }
+      })()
+        .catch(err => {
+          console.log(err);
+        })
+        .then(() => {
+          if (onlineFriends.length > 0) {
+            let matchedFriendId =
+              onlineFriends[Math.floor(Math.random() * onlineFriends.length)];
+            // do something SUMANTH
+            socket.to(matchedFriendId).emit("request-random-chat");
+            //continue here porrnachandu
+          }
+        });
 
-//       //rclient.get(friend.id,(err,reply)=>{
-//       //         if(reply){
-//       //           onlineFriends.push(friend);
-//       //         }
-//       //     });
-//     }
-//   });
-//   //   User.findOne({ id: id }).exec((err, user) => {
-//   //     if (err) res.status(500).send(err);
-//   //     else {
-//   //       let random_friend =
-//   //         user.friends[Math.floor(Math.random() * friends.friends.length)];
-//   //       user.randomChat = {
-//   //         with: random_friend.id,
-//   //         startdate: Date.now()
-//   //       };
-//   //       user.save((err, user) => {
-//   //         if (err) return res.send(500, { error: err });
-//   //         console.log("random assigned " + user.name);
-//   //         return res.sendStatus(200);
-//   //       });
-//   //       console.log(random_friend.name);
-//   //     }
-//   //   });
-// });
+      //rclient.get(friend.id,(err,reply)=>{
+      //         if(reply){
+      //           onlineFriends.push(friend);
+      //         }
+      //     });
+    }
+  });
+  //   User.findOne({ id: id }).exec((err, user) => {
+  //     if (err) res.status(500).send(err);
+  //     else {
+  //       let random_friend =
+  //         user.friends[Math.floor(Math.random() * friends.friends.length)];
+  //       user.randomChat = {
+  //         with: random_friend.id,
+  //         startdate: Date.now()
+  //       };
+  //       user.save((err, user) => {
+  //         if (err) return res.send(500, { error: err });
+  //         console.log("random assigned " + user.name);
+  //         return res.sendStatus(200);
+  //       });
+  //       console.log(random_friend.name);
+  //     }
+  //   });
+});
 router.get("/:userId/friends", (req, res) => {
   let id = req.params.userId;
   //   console.log("requested for friends");
@@ -157,6 +148,7 @@ router.get("/global-msgs", (req, res) => {
     });
 });
 router.get("/private-msgs", (req, res) => {
+  console.log("requested: ", req.url);
   //not tested
   //url format /private-msgs?person=shshhshsh&friend=shshshhs&skip=0
   const { person, friend, skip } = req.query;
@@ -165,11 +157,9 @@ router.get("/private-msgs", (req, res) => {
   }
   let skipCount = Number(skip);
   const dbQuery = {
-    $or: [
-      { from: person, to: friend, private: true },
-      { from: friend, to: person, private: true }
-    ]
+    people: { $all: [person, friend] }
   };
+  console.log(dbQuery);
   const projection = {
     _id: 0,
     __v: 0,

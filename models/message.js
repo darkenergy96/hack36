@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const messageSchema = new Schema({
-  from: { type: String },
-  to: { type: String },
+  from: { type: String, required: true },
+  to: { type: String, required: true },
   people: [],
-  message: { type: String },
+  message: { type: String, required: true },
   date: { type: Date, default: Date.now },
   private: { type: Boolean, default: false }
 });
