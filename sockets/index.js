@@ -72,7 +72,7 @@ let socketHandler = function(socket) {
         if (err) return 500, { error: err };
         console.log("message saved");
       });
-      io.emit("message", data);
+      socket.broadcast.emit("message", data);
       console.log("message" + data.message);
     });
     socket.on("private", data => {
