@@ -1,10 +1,11 @@
 const util = require("util");
 const mongoose = require("mongoose");
 const User = require("../models/user.js");
-const Message = require("../models/message.js");
+const AMessage = require("../models/anonymous-message.js");
 // const rclient = require("./index").rclient;
 const fcm = require("../push-notification.js");
 function socketHandler(socket, rclient) {
+  let rclientPromise = util.promisify(rclient.get).bind(rclient);
   //on random chat request
   socket.on("random-chat-request", data => {
     console.log("requester", data);
@@ -16,7 +17,7 @@ function socketHandler(socket, rclient) {
       else {
         let friends = user.friends;
         let onlineFriends = []; //socket ids
-        let rclientPromise = util.promisify(rclient.get).bind(rclient);
+
         (async () => {
           for (const friend of friends) {
             const socketId = await rclientPromise(friend.id);
@@ -34,8 +35,7 @@ function socketHandler(socket, rclient) {
               let friendSocketId =
                 onlineFriends[Math.floor(Math.random() * onlineFriends.length)];
               console.log("emit to", friendSocketId);
-              socket.to(friendSocketId).emit("random-chat-request");
-              debugger;
+              socket.to(friendSocketId).emit("random-chat-request", id);
               //fcm push notification
               (async () => {
                 let friendId = await rclientPromise(friendSocketId);
@@ -46,6 +46,11 @@ function socketHandler(socket, rclient) {
                   console.log(`friendId found error`);
                 })
                 .then(friendId => {
+                  user.randomChat.with = friendId;
+                  user.randomChat.status = "pending";
+                  user.save(err => {
+                    console.log(err);
+                  });
                   // let deviceToken = User.findOne(
                   //   { id: friendId },
                   //   (err, user) => {
@@ -115,10 +120,11 @@ function socketHandler(socket, rclient) {
   //accept random-chat
   socket.on("random-chat-accept", data => {
     console.log("accept random chat");
-    let id = data;
+    let id = data; //who accepts
     (async () => {
-      let user = await User.findOne({ "prankDetails.friendId": id });
+      let user = await User.findOne({ "randomChat.with": id });
       if (user) {
+        //who sends initially
         //start random chat
         const newRandomChatDetails = {
           with: id,
@@ -132,10 +138,15 @@ function socketHandler(socket, rclient) {
         let savedCurrentUser = await currentUser.save();
         //now emit
         let socketId = await rclientPromise(savedUser.id);
-        console.log("socketid", socketId);
-        socket.to(socketId).emit("random-chat-start");
-        socket.to(socket.id).emit("random-chat-start");
-        debugger;
+        let sid = await rclientPromise(savedCurrentUser.id);
+        console.log("sid", socket.id);
+        console.log("socketid before", socketId);
+        // socket.emit("random-chat-start");
+
+        socket.to(socketId).emit("random-chat-start", id);
+        socket.to(socket.id).emit("random-chat-start", savedUser.id);
+      } else {
+        console.log("no user");
       }
     })().catch(err => {
       console.log(err);
@@ -148,7 +159,8 @@ function socketHandler(socket, rclient) {
   });
   //on random-chat message
   socket.on("random-chat-msg", data => {
-    let message = new Message({
+    console.log("msg", data);
+    let message = new AMessage({
       from: data.from,
       to: data.to,
       message: data.message,
@@ -157,7 +169,13 @@ function socketHandler(socket, rclient) {
     message.save((err, msg) => {
       if (err) next(err);
       else {
-        socket.to(data.to).emit("random-chat-msg", msg);
+        rclient.get(data.to, (err, socketId) => {
+          if (err) {
+            console.log(err);
+          } else {
+            socket.to(socketId).emit("random-chat-msg", msg);
+          }
+        });
       }
     });
   });
