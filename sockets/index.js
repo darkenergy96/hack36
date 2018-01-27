@@ -2,13 +2,21 @@ const express = require("express");
 const app = express();
 const router = express.Router();
 const http = require("../server.js");
-const io = require("socket.io")(http);
+const io = require("socket.io")(http, {
+  pingInterval: 2000,
+  pingTimeout: 3000
+});
 const util = require("util");
 const mongoose = require("mongoose");
 const User = require("../models/user.js");
 const Message = require("../models/message.js");
 const redis = require("redis");
-const redisOptions = { host: "localhost", port: 6379 };
+const localRedisOptions = { host: "localhost", port: 6379 };
+const cloudRedisOptions = {
+  host: "redis-11888.c10.us-east-1-2.ec2.cloud.redislabs.com",
+  port: 11888
+};
+const redisOptions = process.env.DEV ? localRedisOptions : cloudRedisOptions;
 const rclient = redis.createClient(redisOptions);
 const anonymousSockets = require("./anonymous");
 rclient.on("connect", () => {
