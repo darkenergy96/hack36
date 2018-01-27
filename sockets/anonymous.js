@@ -1,12 +1,10 @@
-const io = require("socket.io")(http);
 const util = require("util");
 const mongoose = require("mongoose");
 const User = require("../models/user.js");
 const Message = require("../models/message.js");
-const redis = require("redis");
-const rclient = require("./index");
-module.exports = rclient;
-function socketHandler(socket) {
+// const rclient = require("./index").rclient;
+const fcm = require("../push-notification.js");
+function socketHandler(socket, rclient) {
   //on random chat request
   socket.on("random-chat-request", data => {
     console.log("socket on random-chat-request");
@@ -21,7 +19,9 @@ function socketHandler(socket) {
         (async () => {
           for (const friend of friends) {
             const socketId = await rclientPromise(friend.id);
-            onlineFriends.push(socketId);
+            if (socketId !== null) {
+              onlineFriends.push(socketId);
+            }
           }
         })()
           .catch(err => {
@@ -34,6 +34,37 @@ function socketHandler(socket) {
                 onlineFriends[Math.floor(Math.random() * onlineFriends.length)];
               console.log(friendSocketId);
               socket.to(friendSocketId).emit("random-chat-request");
+              //fcm push notification
+              (async () => {
+                let friendId = await rclientPromise(friendSocketId);
+                return friendId;
+              })()
+                .catch(err => {
+                  console.log(err);
+                  console.log(`friendId found error`);
+                })
+                .then(friendId => {
+                  let deviceToken = User.findOne(
+                    { id: friendId },
+                    (err, user) => {
+                      if (err) console.log(`user find error ${err}`);
+                      let message = {
+                        to: user.deviceToken,
+                        data: {
+                          title: "Anonymous Chat request",
+                          body: "One of your friend wants to chat anonymously"
+                        }
+                      };
+                      fcm.send(message, (err, res) => {
+                        if (err)
+                          console.log(
+                            `something worng with Push Notification: ${err}`
+                          );
+                        else console.log("push-notification successful");
+                      });
+                    }
+                  );
+                });
               /////////////////////////////
               // (async () => {
               //   let random_friend_socketId = await rclientPromise(
