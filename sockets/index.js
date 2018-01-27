@@ -19,6 +19,7 @@ const cloudRedisOptions = {
 const redisOptions = process.env.DEV ? localRedisOptions : cloudRedisOptions;
 const rclient = redis.createClient(redisOptions);
 const anonymousSockets = require("./anonymous");
+const prankChat = require("./prank-chat");
 rclient.on("connect", () => {
   // module.exports.rclient = rclient;
   console.log("connected to redis");
@@ -94,14 +95,7 @@ let socketHandler = function(socket) {
         socket.to(data.from).emit("private", data);
       });
     });
-    //request prank
-    socket.on("request-prank", data => {
-      const { from, to } = data;
-      rclient.get(data.to, (err, socketId) => {
-        if (err) console.log(err);
-        socket.to(socketId).emit("request-prank", from);
-      });
-    });
+    prankChat(socket, rclient);
     anonymousSockets(socket, rclient);
   });
 };
