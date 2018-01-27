@@ -18,4 +18,27 @@ router.get("/prank-status", (req, res, next) => {
     }
   });
 });
+
+//hold it here,probably used in socket events
+router.post("/prank-status", (req, res, next) => {
+  const { id, friendId, friendName } = req.body;
+  User.findOne({ id }, (err, user) => {
+    if (err) {
+      next(err);
+    } else {
+      user.prankDetails = {
+        friendId,
+        name: friendName,
+        status: true
+      };
+      user.save(err => {
+        if (err) {
+          next(err);
+        } else {
+          res.sendStatus(200);
+        }
+      });
+    }
+  });
+});
 module.exports = router;

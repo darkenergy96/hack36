@@ -17,7 +17,7 @@ mongoose.connect(mongoURL);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(Routes);
-app.use(socketData);
+// app.use(socketData);
 app.use(fetchRoutes);
 app.use(prankRoutes);
 app.use(express.static(path.join(__dirname, "public")));
