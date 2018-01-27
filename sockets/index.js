@@ -13,8 +13,8 @@ const Message = require("../models/message.js");
 const redis = require("redis");
 const localRedisOptions = { host: "localhost", port: 6379 };
 const cloudRedisOptions = {
-  host: "redis-11888.c10.us-east-1-2.ec2.cloud.redislabs.com",
-  port: 11888
+  host: "redis-14006.c9.us-east-1-2.ec2.cloud.redislabs.com",
+  port: 14006
 };
 const redisOptions = process.env.DEV ? localRedisOptions : cloudRedisOptions;
 const rclient = redis.createClient(redisOptions);
