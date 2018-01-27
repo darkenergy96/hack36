@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const http = require("http").Server(app);
@@ -12,8 +13,11 @@ const fetchRoutes = require("./routes/fetch");
 const prankRoutes = require("./routes/prank");
 const errorHandler = require("./error-handler");
 mongoose.Promise = global.Promise;
-const mongoURL = "mongodb://localhost:27017/socio";
-mongoose.connect(mongoURL);
+const localURL = "mongodb://localhost:27017/socio";
+const atlasURL =
+  "mongodb://chan-socio:zAIs1lCkGFso0a01@sociointegrate-shard-00-00-2xa6g.mongodb.net:27017,sociointegrate-shard-00-01-2xa6g.mongodb.net:27017,sociointegrate-shard-00-02-2xa6g.mongodb.net:27017/test?ssl=true&replicaSet=sociointegrate-shard-0&authSource=admin";
+const dbURL = process.env.DEV ? localURL : atlasURL;
+mongoose.connect(dbURL);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(Routes);

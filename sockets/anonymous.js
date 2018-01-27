@@ -83,6 +83,7 @@ function socketHandler(socket, rclient) {
             } else {
               let random_friend =
                 user.friends[Math.floor(Math.random() * onlineFriends.length)];
+              console.log(`random friend assigned ${random_friend.name}`);
             }
           });
 
