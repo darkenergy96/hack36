@@ -54,7 +54,7 @@ router.get("/:userId/random-chat", (req, res) => {
     if (err) console.log("User find error", err);
     else {
       let friends = user.friends;
-      let onlineFriends = [];
+      let onlineFriends = []; //socket ids
       let promiseArray = [];
       let rclientPromise = util.promisify(rclient.get);
       // friends.forEach(friend => {
@@ -81,9 +81,11 @@ router.get("/:userId/random-chat", (req, res) => {
         })
         .then(() => {
           if (onlineFriends.length > 0) {
-            let random_friend =
+            let matchedFriendId =
               onlineFriends[Math.floor(Math.random() * onlineFriends.length)];
             // do something SUMANTH
+            socket.to(matchedFriendId).emit("request-random-chat");
+            //continue here porrnachandu
           }
         });
 
@@ -146,6 +148,7 @@ router.get("/global-msgs", (req, res) => {
     });
 });
 router.get("/private-msgs", (req, res) => {
+  console.log("requested: ", req.url);
   //not tested
   //url format /private-msgs?person=shshhshsh&friend=shshshhs&skip=0
   const { person, friend, skip } = req.query;
@@ -154,11 +157,9 @@ router.get("/private-msgs", (req, res) => {
   }
   let skipCount = Number(skip);
   const dbQuery = {
-    $or: [
-      { from: person, to: friend, private: true },
-      { from: friend, to: person, private: true }
-    ]
+    people: { $all: [person, friend] }
   };
+  console.log(dbQuery);
   const projection = {
     _id: 0,
     __v: 0,

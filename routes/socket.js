@@ -54,11 +54,14 @@ let socketHandler = function(socket) {
       console.log("message" + data.message);
     });
     socket.on("private", data => {
+      console.log("private event triggered");
+      console.log(data);
       let message = new Message({
-        from: data.from,
+        from: data.fromId,
         to: data.to,
         message: data.message,
-        private: true
+        private: true,
+        people: [data.fromId, data.to]
       });
       console.log(data.to + " to id");
       message.save((err, message) => {
