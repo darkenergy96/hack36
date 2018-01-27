@@ -12,9 +12,9 @@ const redisOptions = { host: "localhost", port: 6379 };
 const rclient = redis.createClient(redisOptions);
 const anonymousSockets = require("./anonymous");
 rclient.on("connect", () => {
+  // module.exports.rclient = rclient;
   console.log("connected to redis");
 });
-module.exports = rclient;
 let userCount = 0;
 let socketHandler = function(socket) {
   socket.on("disconnect", function() {
@@ -82,7 +82,8 @@ let socketHandler = function(socket) {
         socket.to(socketId).emit("request-prank", from);
       });
     });
-    anonymousSockets(socket);
+    anonymousSockets(socket, rclient);
   });
 };
 io.on("connection", socketHandler);
+module.exports.router = router;
