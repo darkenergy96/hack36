@@ -131,6 +131,11 @@ let socketHandler = function(socket) {
                       console.log(`random assign socketId: ${socketId}`);
                     });
                 }
+              } else {
+                let random_friend =
+                  user.friends[
+                    Math.floor(Math.random() * onlineFriends.length)
+                  ];
               }
             });
 
