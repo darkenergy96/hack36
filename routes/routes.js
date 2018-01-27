@@ -55,18 +55,43 @@ router.get("/:userId/random-chat", (req, res) => {
     else {
       let friends = user.friends;
       let onlineFriends = [];
+      let promiseArray = [];
+      let rclientPromise = util.promisify(rclient.get);
       // friends.forEach(friend => {
-      //     rclient.get(friend.id,(err,reply)=>{
+      //   promiseArray.push(rclientPromise(friend.id));
+      // });
+      // (async () => {
+      //   for await (const reply of promiseArray) {
+      //     console.log(reply);
+      //     onlineFriends.push(friends[index]);
+      //     index++;
+      //   }
+      // })().catch(err => {
+      //   console.log(err);
+      // });
+      (async () => {
+        for (const friend of friends) {
+          const id = await rclientPromise(friend.id);
+          console.log(id);
+          onlineFriends.push(id);
+        }
+      })()
+        .catch(err => {
+          console.log(err);
+        })
+        .then(() => {
+          if (onlineFriends.length > 0) {
+            let random_friend =
+              onlineFriends[Math.floor(Math.random() * onlineFriends.length)];
+            // do something SUMANTH
+          }
+        });
+
+      //rclient.get(friend.id,(err,reply)=>{
       //         if(reply){
       //           onlineFriends.push(friend);
       //         }
       //     });
-      // });
-      if (onlineFriends.length > 0) {
-        let random_friend =
-          onlineFriends[Math.floor(Math.random() * onlineFriends.length)];
-        // do something SUMANTH
-      }
     }
   });
   //   User.findOne({ id: id }).exec((err, user) => {
