@@ -11,7 +11,8 @@ const userSchema = new Schema({
   friendsCount: { type: Number, default: 0 },
   // randomChat: { with: { type: String }, startdate: { type: Date } },
   randomChat: [{ with: { type: String }, startdate: { type: Date } }],
-  deviceToken: { type: String }
+  deviceToken: { type: String },
+  prankStatus: { type: Boolean, default: false }
 });
 const User = mongoose.model("User", userSchema);
 module.exports = User;
