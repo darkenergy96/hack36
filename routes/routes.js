@@ -4,8 +4,9 @@ const util = require("util");
 const mongoose = require("mongoose");
 const User = require("../models/user.js");
 const Message = require("../models/message.js");
-
+const rclient = require("./socket.js");
 router.post("/user-details", (req, res) => {
+  console.log("test", req.body.deviceToken);
   User.findOne({ id: req.body.id }, (err, user) => {
     let { body } = req;
     if (err) throw err;
@@ -18,11 +19,12 @@ router.post("/user-details", (req, res) => {
         birthday: body.birthday,
         friends: body.friends.data,
         token: body.token,
-        friendsCount: body.friends.summary.total_count
+        friendsCount: body.friends.summary.total_count,
+        deviceToken: body.deviceToken
       });
       user.save((err, user) => {
         if (err) return res.send(500, { error: err });
-        console.log("user saved " + user.name);
+        console.log("user saved " + user.name + user.deviceToken);
         return res.sendStatus(200);
       });
     }
@@ -31,30 +33,57 @@ router.post("/user-details", (req, res) => {
       let update = {
         friends: body.friends.data,
         token: body.token,
-        friendsCount: body.friends.summary.total_count
+        friendsCount: body.friends.summary.total_count,
+        deviceToken: body.deviceToken
       };
       User.findOneAndUpdate(query, update, function(err, user) {
         if (err) return res.send(500, { error: err });
-        console.log("user updated " + user.name);
+        console.log("user updated " + user.name + user.deviceToken);
         return res.sendStatus(200);
       });
     }
   });
   // console.log(util.inspect(req.body, { showHidden: false, depth: null }));
 });
+// random chat will be edited by SUMANTH
 router.get("/:userId/random-chat", (req, res) => {
   let id = req.params.userId;
-  User.findOne({ id: id })
-    .select("friends -_id")
-    .exec((err, friends) => {
-      if (err) res.status(500).send(err);
-      else {
+  User.findOne({ id: id }, (err, user) => {
+    if (err) console.log("User find error", err);
+    else {
+      let friends = user.friends;
+      let onlineFriends = [];
+      // friends.forEach(friend => {
+      //     rclient.get(friend.id,(err,reply)=>{
+      //         if(reply){
+      //           onlineFriends.push(friend);
+      //         }
+      //     });
+      // });
+      if (onlineFriends.length > 0) {
         let random_friend =
-          friends.friends[Math.floor(Math.random() * friends.friends.length)];
-
-        console.log(random_friend.name);
+          onlineFriends[Math.floor(Math.random() * onlineFriends.length)];
+        // do something SUMANTH
       }
-    });
+    }
+  });
+  //   User.findOne({ id: id }).exec((err, user) => {
+  //     if (err) res.status(500).send(err);
+  //     else {
+  //       let random_friend =
+  //         user.friends[Math.floor(Math.random() * friends.friends.length)];
+  //       user.randomChat = {
+  //         with: random_friend.id,
+  //         startdate: Date.now()
+  //       };
+  //       user.save((err, user) => {
+  //         if (err) return res.send(500, { error: err });
+  //         console.log("random assigned " + user.name);
+  //         return res.sendStatus(200);
+  //       });
+  //       console.log(random_friend.name);
+  //     }
+  //   });
 });
 router.get("/:userId/friends", (req, res) => {
   let id = req.params.userId;
