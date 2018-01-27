@@ -18,6 +18,10 @@ let userCount = 0;
 let socketHandler = function(socket) {
   socket.on("disconnect", function() {
     userCount--;
+    rclient.get(socket.id, (err, userId) => {
+      rclient.del(userId);
+      rclient.del(socket.id);
+    });
     console.log("user disconnected: ", userCount);
   });
   userCount++;
