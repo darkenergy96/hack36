@@ -9,7 +9,9 @@ const userSchema = new Schema({
   token: { type: String, required: true },
   friends: [{ name: String, id: String }],
   friendsCount: { type: Number, default: 0 },
-  randomChat: { with: { type: String }, startdate: { type: Date } },
+  // randomChat: { with: { type: String }, startdate: { type: Date } },
+  randomChat: [{ with: { type: String }, startdate: { type: Date } }],
+  deviceToken: { type: String },
   prankDetails: {
     friendId: { type: String },
     name: { type: String },

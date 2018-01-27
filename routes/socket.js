@@ -13,6 +13,7 @@ const rclient = redis.createClient(redisOptions);
 rclient.on("connect", () => {
   console.log("connected to redis");
 });
+module.exports = rclient;
 let userCount = 0;
 let socketHandler = function(socket) {
   socket.on("disconnect", function() {
